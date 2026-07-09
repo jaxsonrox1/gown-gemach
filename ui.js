@@ -59,6 +59,7 @@ const UI = {
             document.getElementById('set-password').value = State.data.settings.password;
             document.getElementById('set-theme').value = State.data.settings.theme;
             document.getElementById('set-accent').value = State.data.settings.accent;
+            document.getElementById('set-secondary').value = State.data.settings.secondary;
             this.openModal('modal-settings');
         });
 
@@ -99,7 +100,6 @@ const UI = {
         }
     },
     
-    // Image Compression Helper
     compressImage(file, callback) {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -108,13 +108,13 @@ const UI = {
             img.src = event.target.result;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 300; // Keep json size small
+                const MAX_WIDTH = 300; 
                 const scaleSize = MAX_WIDTH / img.width;
                 canvas.width = MAX_WIDTH;
                 canvas.height = img.height * scaleSize;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                callback(canvas.toDataURL('image/jpeg', 0.6)); // 60% quality jpeg
+                callback(canvas.toDataURL('image/jpeg', 0.6)); 
             }
         }
     },
@@ -201,14 +201,14 @@ const UI = {
         const newSettings = {
             password: document.getElementById('set-password').value,
             theme: document.getElementById('set-theme').value,
-            accent: document.getElementById('set-accent').value
+            accent: document.getElementById('set-accent').value,
+            secondary: document.getElementById('set-secondary').value
         };
         await State.updateSettings(newSettings);
-        localStorage.setItem('gemach_auth', newSettings.password); // Update locally in case they changed it
+        localStorage.setItem('gemach_auth', newSettings.password); 
         this.closeModal('modal-settings');
     },
 
-    // Gowns UI
     renderGowns() {
         const list = document.getElementById('gown-list');
         list.innerHTML = '';
@@ -288,7 +288,6 @@ const UI = {
         const fileInput = document.getElementById('edit-gown-image-file');
 
         const finishEdit = (base64Img) => {
-            // if base64Img is undefined, updateGown will ignore it and keep the old image
             if(!State.updateGown(oldId, newId, newName, base64Img)) {
                 alert("Update Failed: That Barcode/ID is already in use by another gown.");
             } else {
@@ -303,7 +302,7 @@ const UI = {
         if (fileInput.files && fileInput.files[0]) {
             this.compressImage(fileInput.files[0], finishEdit);
         } else {
-            finishEdit(undefined); // undefined signifies no image update
+            finishEdit(undefined); 
         }
     },
     
@@ -316,7 +315,6 @@ const UI = {
         }
     },
 
-    // Sidebar & Memos (identical implementation, ensuring variables apply correctly)
     renderSidebar(dateStr) {
         const localDate = new Date(dateStr + 'T00:00:00');
         document.getElementById('sidebar-date-title').textContent = localDate.toDateString();
