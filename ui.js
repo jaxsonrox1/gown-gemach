@@ -46,11 +46,20 @@ const UI = {
             this.populateDropdowns();
             this.openModal('modal-transaction');
         });
+        
+        // Open Gowns Manager
         document.getElementById('btn-manage-gowns').addEventListener('click', () => {
-            document.getElementById('new-gown-id').value = State.getNextGownId();
+            document.getElementById('search-manage-gowns').value = '';
             this.renderGowns();
             this.openModal('modal-gowns');
         });
+
+        // Open Add New Gown inside Gowns Manager
+        document.getElementById('btn-open-add-gown').addEventListener('click', () => {
+            document.getElementById('new-gown-id').value = State.getNextGownId();
+            this.openModal('modal-add-gown');
+        });
+
         document.getElementById('btn-open-gown-selector').addEventListener('click', () => {
             this.renderGownSelectionGrid();
             this.openModal('modal-select-gown');
@@ -76,8 +85,9 @@ const UI = {
             document.getElementById('custom-deposit-field').style.display = e.target.value === 'CUSTOM' ? 'block' : 'none';
         });
         
-        // Search filter for gown selection
+        // Search filters
         document.getElementById('search-gown').addEventListener('input', (e) => this.renderGownSelectionGrid(e.target.value));
+        document.getElementById('search-manage-gowns').addEventListener('input', (e) => this.renderGowns(e.target.value));
 
         document.getElementById('form-transaction').addEventListener('submit', this.handleTransactionSubmit.bind(this));
         document.getElementById('form-add-gown').addEventListener('submit', this.handleAddGownSubmit.bind(this));
@@ -209,42 +219,59 @@ const UI = {
         this.closeModal('modal-settings');
     },
 
-    renderGowns() {
+    renderGowns(searchQuery = '') {
         const list = document.getElementById('gown-list');
         list.innerHTML = '';
+        const lowerSearch = searchQuery.toLowerCase();
+        
         State.data.gowns.forEach(g => {
-            const imgHTML = g.imageUrl ? `<img src="${g.imageUrl}" class="gown-image" alt="Gown">` : `<div class="gown-image placeholder">No Image</div>`;
-            
-            const history = State.getGownHistory(g.id);
-            let historyHTML = '';
-            if (history.length === 0) {
-                historyHTML = '<div class="history-item">No history found.</div>';
-            } else {
-                history.forEach(h => { historyHTML += `<div class="history-item"><strong>${h.action}:</strong> ${h.date}</div>`; });
-            }
-
-            list.innerHTML += `
-                <div class="gown-card">
-                    ${imgHTML}
-                    <div class="gown-info">
-                        <div><strong>${g.id}</strong><br><span style="color:var(--text-muted);font-size:0.9rem;">${g.name}</span></div>
-                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                            <button type="button" class="btn secondary small" style="flex:1;" onclick="UI.promptEditGown('${g.id}')">Edit</button>
-                            <button type="button" class="btn danger small" style="flex:1;" onclick="UI.deleteGown('${g.id}')">Delete</button>
-                        </div>
-                        <button type="button" class="btn small" style="background:var(--surface); color:var(--text-main); border: 1px solid var(--border-color);" onclick="UI.toggleHistory('${g.id}')">View History</button>
-                        <div id="history-${g.id}" class="history-list" style="display:none; max-height:100px; overflow-y:auto; font-size:0.8rem;">
-                            ${historyHTML}
+            if (g.id.toLowerCase().includes(lowerSearch) || g.name.toLowerCase().includes(lowerSearch)) {
+                const imgHTML = g.imageUrl ? `<img src="${g.imageUrl}" class="gown-image" alt="Gown">` : `<div class="gown-image placeholder">No Image</div>`;
+                
+                list.innerHTML += `
+                    <div class="gown-card">
+                        ${imgHTML}
+                        <div class="gown-info">
+                            <div><strong>${g.id}</strong><br><span style="color:var(--text-muted);font-size:0.9rem;">${g.name}</span></div>
+                            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                                <button type="button" class="btn secondary small" style="flex:1;" onclick="UI.promptEditGown('${g.id}')">Edit</button>
+                                <button type="button" class="btn danger small" style="flex:1;" onclick="UI.deleteGown('${g.id}')">Delete</button>
+                            </div>
+                            <button type="button" class="btn small" style="background:var(--surface); color:var(--text-main); border: 1px solid var(--border-color);" onclick="UI.openHistoryModal('${g.id}')">View History</button>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         });
     },
 
-    toggleHistory(id) {
-        const el = document.getElementById(`history-${id}`);
-        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    openHistoryModal(id) {
+        const g = State.getGown(id);
+        if(!g) return;
+        
+        document.getElementById('history-modal-title').textContent = `History: ${g.id}`;
+        
+        const history = State.getGownHistory(id);
+        const container = document.getElementById('history-modal-content');
+        container.innerHTML = '';
+        
+        if (history.length === 0) {
+            container.innerHTML = '<p class="empty-state">No history found for this gown.</p>';
+        } else {
+            history.forEach(h => {
+                const typeClass = h.type === 'clean' ? 'clean' : 'lend';
+                const icon = h.type === 'clean' ? '🧹' : '👗';
+                container.innerHTML += `
+                    <div class="history-modal-item ${typeClass}">
+                        <strong class="action-title">${icon} ${h.action}</strong>
+                        <span><strong>Date:</strong> ${h.date}</span>
+                        <span><strong>Customer:</strong> ${h.user}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        this.openModal('modal-gown-history');
     },
     
     handleAddGownSubmit(e) {
@@ -258,8 +285,8 @@ const UI = {
                 alert("This Gown ID already exists!");
             } else {
                 document.getElementById('form-add-gown').reset();
-                document.getElementById('new-gown-id').value = State.getNextGownId();
-                this.renderGowns();
+                this.closeModal('modal-add-gown');
+                this.renderGowns(document.getElementById('search-manage-gowns').value);
                 this.populateDropdowns();
             }
         };
@@ -292,7 +319,7 @@ const UI = {
                 alert("Update Failed: That Barcode/ID is already in use by another gown.");
             } else {
                 this.closeModal('modal-edit-gown');
-                this.renderGowns();
+                this.renderGowns(document.getElementById('search-manage-gowns').value);
                 this.populateDropdowns();
                 Calendar.render();
                 if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr);
@@ -309,7 +336,7 @@ const UI = {
     deleteGown(id) {
         if(confirm(`Are you sure you want to delete gown ${id}?`)) {
             State.deleteGown(id);
-            this.renderGowns();
+            this.renderGowns(document.getElementById('search-manage-gowns').value);
             this.populateDropdowns();
             Calendar.render();
         }
