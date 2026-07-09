@@ -1,5 +1,10 @@
 const State = {
     data: {
+        settings: {
+            password: '1234',
+            theme: 'dark',
+            accent: '#d4af37'
+        },
         gowns: [],
         users: [],
         transactions: [],
@@ -17,7 +22,24 @@ const State = {
             await this.save(); 
         } else {
             this.data = gistData;
+            // Ensure settings exists for older datasets
+            if(!this.data.settings) {
+                this.data.settings = { password: '1234', theme: 'dark', accent: '#d4af37' };
+            }
         }
+        
+        this.applySettings();
+    },
+    
+    applySettings() {
+        document.documentElement.setAttribute('data-theme', this.data.settings.theme);
+        document.documentElement.style.setProperty('--primary', this.data.settings.accent);
+    },
+    
+    updateSettings(newSettings) {
+        this.data.settings = newSettings;
+        this.applySettings();
+        return this.save();
     },
 
     async save() {
@@ -25,7 +47,6 @@ const State = {
             this.saveQueue = true;
             return;
         }
-        
         this.isSaving = true;
         const btn = document.getElementById('submit-transaction');
         if(btn) { btn.textContent = "Saving..."; btn.disabled = true; }
@@ -58,7 +79,6 @@ const State = {
         return this.save();
     },
 
-    // Gown Management
     getNextGownId() {
         if (this.data.gowns.length === 0) return "GWN-0001";
         let max = 0;
@@ -87,9 +107,8 @@ const State = {
         if(g) {
             g.id = newId;
             g.name = newName;
-            g.imageUrl = newImageUrl || '';
+            if(newImageUrl !== undefined) g.imageUrl = newImageUrl; 
 
-            // Cascade the ID change to any transactions
             this.data.transactions.forEach(t => {
                 if (t.gownId === oldId) t.gownId = newId;
             });
@@ -110,18 +129,12 @@ const State = {
                 if(t.lendDate) history.push({ action: 'Lent Out', date: t.lendDate });
             }
         });
-        // Sort newest to oldest
         return history.sort((a, b) => new Date(b.date) - new Date(a.date));
     },
 
-    // Memos (Events)
     addMemo(memo) {
         memo.id = 'M-' + Date.now();
-        this.data.events.push({
-            id: memo.id,
-            title: memo.text,
-            date: memo.date
-        });
+        this.data.events.push({ id: memo.id, title: memo.text, date: memo.date });
         return this.save();
     },
     
