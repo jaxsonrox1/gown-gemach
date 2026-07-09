@@ -38,7 +38,6 @@
                 </div>
             </header>
             
-            <!-- Separated Weekdays Container to fix empty space -->
             <div id="calendar-weekdays" class="calendar-weekdays"></div>
             
             <div id="calendar-grid" class="calendar-grid">
@@ -56,6 +55,8 @@
             </div>
         </aside>
     </div>
+
+    <!-- Modals -->
 
     <!-- Add Transaction Modal -->
     <div id="modal-transaction" class="modal">
@@ -130,19 +131,37 @@
             <span class="close-btn" data-modal="modal-gowns">&times;</span>
             <h2>Manage Gowns</h2>
             
-            <form id="form-add-gown" class="responsive-form">
-                <input type="text" id="new-gown-id" class="form-control" placeholder="Barcode / ID" required>
-                <input type="text" id="new-gown-name" class="form-control" placeholder="Name / Description" required>
-                <div style="flex:2; display:flex; gap:5px; align-items:center;">
-                    <label style="font-size:0.8rem; margin:0;">Upload Image:</label>
-                    <input type="file" id="new-gown-image-file" class="form-control" accept="image/*">
-                </div>
-                <button type="submit" class="btn primary">Add</button>
-            </form>
+            <div style="display:flex; gap:10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="search-manage-gowns" class="form-control" placeholder="Search gowns by Barcode or Name..." style="flex: 1; min-width: 200px;">
+                <button type="button" class="btn primary" id="btn-open-add-gown">+ Add New Gown</button>
+            </div>
 
             <div id="gown-list" class="gown-grid">
                 <!-- Gowns dynamically injected here -->
             </div>
+        </div>
+    </div>
+
+    <!-- Add Gown Modal -->
+    <div id="modal-add-gown" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal="modal-add-gown">&times;</span>
+            <h2>Add New Gown</h2>
+            <form id="form-add-gown">
+                <div class="form-group">
+                    <label>Barcode / ID</label>
+                    <input type="text" id="new-gown-id" class="form-control" placeholder="Barcode / ID" required>
+                </div>
+                <div class="form-group">
+                    <label>Name / Description</label>
+                    <input type="text" id="new-gown-name" class="form-control" placeholder="Name / Description" required>
+                </div>
+                <div class="form-group">
+                    <label>Upload Image (Optional)</label>
+                    <input type="file" id="new-gown-image-file" class="form-control" accept="image/*">
+                </div>
+                <button type="submit" class="btn primary full-width">Save New Gown</button>
+            </form>
         </div>
     </div>
 
@@ -168,6 +187,17 @@
                 </div>
                 <button type="submit" class="btn primary full-width">Update Gown</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Gown History Modal -->
+    <div id="modal-gown-history" class="modal">
+        <div class="modal-content" style="max-width: 500px; width: 95%;">
+            <span class="close-btn" data-modal="modal-gown-history">&times;</span>
+            <h2 id="history-modal-title">Gown History</h2>
+            <div id="history-modal-content" class="history-modal-list">
+                <!-- History injected here -->
+            </div>
         </div>
     </div>
 
