@@ -3,7 +3,8 @@ const State = {
         settings: {
             password: '1234',
             theme: 'dark',
-            accent: '#d4af37'
+            accent: '#d4af37',
+            secondary: '#bb86fc'
         },
         gowns: [],
         users: [],
@@ -24,7 +25,9 @@ const State = {
             this.data = gistData;
             // Ensure settings exists for older datasets
             if(!this.data.settings) {
-                this.data.settings = { password: '1234', theme: 'dark', accent: '#d4af37' };
+                this.data.settings = { password: '1234', theme: 'dark', accent: '#d4af37', secondary: '#bb86fc' };
+            } else if (!this.data.settings.secondary) {
+                this.data.settings.secondary = '#bb86fc';
             }
         }
         
@@ -34,6 +37,7 @@ const State = {
     applySettings() {
         document.documentElement.setAttribute('data-theme', this.data.settings.theme);
         document.documentElement.style.setProperty('--primary', this.data.settings.accent);
+        document.documentElement.style.setProperty('--secondary', this.data.settings.secondary);
     },
     
     updateSettings(newSettings) {
