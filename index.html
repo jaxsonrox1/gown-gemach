@@ -47,9 +47,13 @@
             <span class="close-btn" data-modal="modal-transaction">&times;</span>
             <h2>Add Gown Transaction</h2>
             <form id="form-transaction">
+                
                 <div class="form-group">
                     <label>Select Gown</label>
-                    <select id="trans-gown" required></select>
+                    <input type="hidden" id="trans-gown">
+                    <div id="gown-selector-grid" class="gown-selector-grid">
+                        <!-- Selectable image items injected here -->
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -91,17 +95,18 @@
 
     <!-- Manage Gowns Modal -->
     <div id="modal-gowns" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 800px; width: 95%;">
             <span class="close-btn" data-modal="modal-gowns">&times;</span>
             <h2>Manage Gowns</h2>
             
-            <form id="form-add-gown" style="display:flex; gap:10px; margin-bottom: 20px;">
+            <form id="form-add-gown" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom: 20px;">
                 <input type="text" id="new-gown-id" placeholder="Barcode / ID" required style="flex: 1; padding: 8px;">
-                <input type="text" id="new-gown-name" placeholder="Gown Name / Description" required style="flex: 2; padding: 8px;">
+                <input type="text" id="new-gown-name" placeholder="Name / Description" required style="flex: 2; padding: 8px;">
+                <input type="url" id="new-gown-image" placeholder="Image URL (optional)" style="flex: 2; padding: 8px;">
                 <button type="submit" class="btn primary">Add</button>
             </form>
 
-            <div id="gown-list" class="scrollable-list">
+            <div id="gown-list" class="gown-grid">
                 <!-- Gowns dynamically injected here -->
             </div>
         </div>
