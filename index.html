@@ -37,6 +37,10 @@
                     <button class="icon-btn" id="btn-settings">⚙️</button>
                 </div>
             </header>
+            
+            <!-- Separated Weekdays Container to fix empty space -->
+            <div id="calendar-weekdays" class="calendar-weekdays"></div>
+            
             <div id="calendar-grid" class="calendar-grid">
                 <!-- Calendar days will be rendered here via JS -->
             </div>
@@ -53,8 +57,6 @@
         </aside>
     </div>
 
-    <!-- Modals -->
-    
     <!-- Add Transaction Modal -->
     <div id="modal-transaction" class="modal">
         <div class="modal-content">
@@ -108,7 +110,7 @@
         </div>
     </div>
 
-    <!-- Gown Selector Modal (For Transactions) -->
+    <!-- Gown Selector Modal -->
     <div id="modal-select-gown" class="modal">
         <div class="modal-content" style="max-width: 700px; width: 95%;">
             <span class="close-btn" data-modal="modal-select-gown">&times;</span>
@@ -187,15 +189,19 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Accent Color</label>
+                    <label>Primary Accent Color (Gold)</label>
                     <input type="color" id="set-accent" class="form-control" style="padding: 2px; height: 40px;">
+                </div>
+                <div class="form-group">
+                    <label>Secondary Accent Color (Purple)</label>
+                    <input type="color" id="set-secondary" class="form-control" style="padding: 2px; height: 40px;">
                 </div>
                 <button type="submit" class="btn primary full-width">Save Settings</button>
             </form>
         </div>
     </div>
 
-    <!-- Add Memo & Reschedule Modals omitted for brevity - Keep identical to previous version but add "class='form-control'" to inputs -->
+    <!-- Add Memo Modal -->
     <div id="modal-memo" class="modal">
         <div class="modal-content">
             <span class="close-btn" data-modal="modal-memo">&times;</span>
@@ -211,6 +217,7 @@
         </div>
     </div>
 
+    <!-- Reschedule Modal -->
     <div id="modal-reschedule" class="modal">
         <div class="modal-content">
             <span class="close-btn" data-modal="modal-reschedule">&times;</span>
