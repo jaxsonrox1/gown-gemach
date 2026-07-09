@@ -342,6 +342,14 @@ const UI = {
         }
     },
 
+    async deleteTransaction(id) {
+        if(confirm("Are you sure you want to delete this event? This will remove BOTH the scheduled cleaning and lending for this transaction.")) {
+            await State.deleteTransaction(id);
+            Calendar.render();
+            if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr);
+        }
+    },
+
     renderSidebar(dateStr) {
         const localDate = new Date(dateStr + 'T00:00:00');
         document.getElementById('sidebar-date-title').textContent = localDate.toDateString();
