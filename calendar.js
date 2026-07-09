@@ -3,7 +3,22 @@ const Calendar = {
     selectedDateStr: null,
 
     init() {
+        this.renderWeekdays();
         this.render();
+    },
+    
+    renderWeekdays() {
+        const weekdaysGrid = document.getElementById('calendar-weekdays');
+        if (weekdaysGrid.innerHTML === '') {
+            const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Shabbos'];
+            weekdays.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'weekday-header';
+                // Uses spans matched with CSS to automatically shorten text on mobile screens
+                header.innerHTML = `<span class="full-day">${day}</span><span class="short-day">${day.substring(0,3)}</span>`;
+                weekdaysGrid.appendChild(header);
+            });
+        }
     },
 
     changeMonth(offset) {
@@ -25,18 +40,10 @@ const Calendar = {
         const grid = document.getElementById('calendar-grid');
         grid.innerHTML = '';
 
-        // Inject the Weekday headers dynamically
-        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Shabbos'];
-        weekdays.forEach(day => {
-            const header = document.createElement('div');
-            header.className = 'weekday-header';
-            header.textContent = day;
-            grid.appendChild(header);
-        });
-
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+        // Empty padding for days before the 1st of the month
         for(let i = 0; i < firstDay; i++) {
             const pad = document.createElement('div');
             pad.className = 'calendar-day empty';
