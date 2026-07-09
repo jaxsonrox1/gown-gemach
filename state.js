@@ -129,8 +129,11 @@ const State = {
         const history = [];
         this.data.transactions.forEach(t => {
             if (t.gownId === id) {
-                if(t.cleaningDate) history.push({ action: 'Cleaned', date: t.cleaningDate });
-                if(t.lendDate) history.push({ action: 'Lent Out', date: t.lendDate });
+                const u = this.getUser(t.userId);
+                const userName = u ? u.name : 'Unknown Customer';
+                
+                if(t.cleaningDate) history.push({ type: 'clean', action: 'Cleaned', date: t.cleaningDate, user: userName });
+                if(t.lendDate) history.push({ type: 'lend', action: 'Lent Out', date: t.lendDate, user: userName });
             }
         });
         return history.sort((a, b) => new Date(b.date) - new Date(a.date));
