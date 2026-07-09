@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemach Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Calendar Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-titles">
+                    <h1>Gemach Manager</h1>
+                    <h2 id="calendar-month-year">Loading...</h2>
+                </div>
+                <div class="header-actions">
+                    <button id="btn-today" class="btn secondary">Today</button>
+                    <button id="prev-month-btn" class="icon-btn">&lt;</button>
+                    <button id="next-month-btn" class="icon-btn">&gt;</button>
+                    <button class="btn secondary" id="btn-manage-gowns">Gowns Menu</button>
+                    <button class="btn primary" id="btn-add-transaction">+ Transaction</button>
+                </div>
+            </header>
+            <div id="calendar-grid" class="calendar-grid">
+                <!-- Calendar days will be rendered here via JS -->
+            </div>
+        </main>
+
+        <!-- Right Details Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3 id="sidebar-date-title">Select a day</h3>
+            </div>
+            <div id="sidebar-content" class="sidebar-content">
+                <p class="empty-state">Click on any date in the calendar to view details, cleanings, and lending schedules.</p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Add Transaction Modal -->
+    <div id="modal-transaction" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal="modal-transaction">&times;</span>
+            <h2>Add Gown Transaction</h2>
+            <form id="form-transaction">
+                <div class="form-group">
+                    <label>Select Gown</label>
+                    <select id="trans-gown" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Customer</label>
+                    <select id="trans-user" required>
+                        <option value="">-- Select Existing or Add New --</option>
+                        <option value="NEW">+ Add New Customer</option>
+                    </select>
+                </div>
+
+                <div id="new-user-fields" style="display: none;">
+                    <div class="form-group"><input type="text" id="nu-name" placeholder="Full Name"></div>
+                    <div class="form-group"><input type="tel" id="nu-phone" placeholder="Phone Number"></div>
+                    <div class="form-group"><input type="email" id="nu-email" placeholder="Email Address"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Lend Date</label>
+                    <input type="date" id="trans-date" required>
+                    <small>Cleaning date will be automatically scheduled for 3 weeks prior.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Deposit Amount</label>
+                    <select id="trans-deposit" required>
+                        <option value="125">$125</option>
+                        <option value="50">$50</option>
+                        <option value="CUSTOM">Custom Amount...</option>
+                    </select>
+                </div>
+                <div class="form-group" id="custom-deposit-field" style="display: none;">
+                    <input type="number" id="trans-custom-deposit" placeholder="Enter amount">
+                </div>
+
+                <button type="submit" class="btn primary full-width" id="submit-transaction">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Gowns Modal -->
+    <div id="modal-gowns" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-btn" data-modal="modal-gowns">&times;</span>
+            <h2>Manage Gowns</h2>
+            
+            <form id="form-add-gown" style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" id="new-gown-id" placeholder="Barcode / ID" required style="flex: 1; padding: 8px;">
+                <input type="text" id="new-gown-name" placeholder="Gown Name / Description" required style="flex: 2; padding: 8px;">
+                <button type="submit" class="btn primary">Add</button>
+            </form>
+
+            <div id="gown-list" class="scrollable-list">
+                <!-- Gowns dynamically injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Memo Modal -->
+    <div id="modal-memo" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal="modal-memo">&times;</span>
+            <h2>Add Memo</h2>
+            <form id="form-memo">
+                <input type="hidden" id="memo-date">
+                <div class="form-group">
+                    <label>Memo Details</label>
+                    <textarea id="memo-text" rows="3" required placeholder="Type your memo here..."></textarea>
+                </div>
+                <button type="submit" class="btn primary full-width">Save Memo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reschedule Modal -->
+    <div id="modal-reschedule" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal="modal-reschedule">&times;</span>
+            <h2>Reschedule</h2>
+            <p id="reschedule-desc"></p>
+            <form id="form-reschedule">
+                <input type="hidden" id="reschedule-id">
+                <input type="hidden" id="reschedule-type">
+                <div class="form-group">
+                    <label>New Date</label>
+                    <input type="date" id="reschedule-date" required>
+                </div>
+                <button type="submit" class="btn primary full-width">Update Date</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS Files -->
+    <script src="api.js"></script>
+    <script src="state.js"></script>
+    <script src="calendar.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>
