@@ -20,6 +20,14 @@
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading...</div>
+        </div>
+    </div>
+
     <div class="app-container" id="app-container">
         <!-- Main Calendar Area -->
         <main class="main-content">
@@ -263,6 +271,14 @@
                 </div>
                 <button type="submit" class="btn primary full-width">Update Date</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Image Expand Modal -->
+    <div id="modal-image-expand" class="modal modal-image-expand" onclick="UI.closeImageModal()">
+        <div class="image-expand-box" onclick="event.stopPropagation()">
+            <button class="image-expand-close" onclick="UI.closeImageModal()">&#x2715;</button>
+            <img id="image-expand-img" src="" alt="Gown" class="image-expand-full">
         </div>
     </div>
 
