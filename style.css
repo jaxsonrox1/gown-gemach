@@ -76,8 +76,36 @@ body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh;
 .detail-card p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
 .detail-card.has-image { display: flex; gap: 15px; align-items: center; justify-content: space-between; }
 .detail-card-content { flex: 1; }
-.detail-card-image { width: 65px; height: 65px; border-radius: 6px; object-fit: cover; background-color: #222; border: 1px solid var(--border-color); flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-.detail-card-image.placeholder { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-muted); text-align: center; background-color: var(--bg-dark); }
+.detail-card-image-wrap {
+    position: relative;
+    width: 65px;
+    height: 65px;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.detail-card-image { width: 100%; height: 100%; object-fit: cover; background-color: #222; display: block; }
+.detail-card-image.placeholder { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-muted); text-align: center; background-color: var(--bg-dark); cursor: default; }
+.image-expand-label {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    border-radius: 6px;
+}
+.detail-card-image-wrap:hover .image-expand-label { opacity: 1; }
 
 /* Buttons & Forms */
 .btn { border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -148,3 +176,101 @@ body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh;
     .gown-grid.selection-mode { grid-template-columns: repeat(1, 1fr); }
     .weekday-header { font-size: 0.75rem; padding: 10px 2px; }
 }
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+.loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.loading-box {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 32px 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+.loading-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.spinner {
+    width: 38px;
+    height: 38px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Image Expand Modal */
+.modal-image-expand {
+    z-index: 20000;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    cursor: zoom-out;
+}
+.image-expand-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+.image-expand-full {
+    max-width: 90vw;
+    max-height: 88vh;
+    border-radius: 10px;
+    object-fit: contain;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+    display: block;
+    animation: expandIn 0.2s ease;
+}
+@keyframes expandIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.image-expand-close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    z-index: 1;
+}
+.image-expand-close:hover { background: var(--danger); color: #fff; border-color: var(--danger); }

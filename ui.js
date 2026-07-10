@@ -49,9 +49,14 @@ const UI = {
         
         // Open Gowns Manager
         document.getElementById('btn-manage-gowns').addEventListener('click', () => {
+            if (this._debounce('openGownsMenu', 1000)) return;
             document.getElementById('search-manage-gowns').value = '';
-            this.renderGowns();
-            this.openModal('modal-gowns');
+            this.showLoading();
+            setTimeout(() => {
+                this.renderGowns();
+                this.hideLoading();
+                this.openModal('modal-gowns');
+            }, 50);
         });
 
         // Open Add New Gown inside Gowns Manager
@@ -109,6 +114,19 @@ const UI = {
             document.getElementById('selected-gown-text').textContent = 'No Gown Selected';
         }
     },
+
+    _busy: false,
+    _debounceMap: {},
+    // Returns true (blocked) if currently saving OR called again within `ms` ms.
+    _debounce(key, ms = 4000) {
+        if (this._busy) return true;
+        const now = Date.now();
+        if (this._debounceMap[key] && now - this._debounceMap[key] < ms) return true;
+        this._debounceMap[key] = now;
+        return false;
+    },
+    showLoading() { this._busy = true; document.getElementById('loading-overlay').classList.add('active'); },
+    hideLoading() { this._busy = false; document.getElementById('loading-overlay').classList.remove('active'); },
     
     compressImage(file, callback) {
         const reader = new FileReader();
@@ -172,6 +190,7 @@ const UI = {
 
     async handleTransactionSubmit(e) {
         e.preventDefault();
+        if (this._debounce('addTransaction')) return;
         
         const gownId = document.getElementById('trans-gown').value;
         if (!gownId) { alert("Please select a gown."); return; }
@@ -213,6 +232,7 @@ const UI = {
         // (lendDate was already defined at the top, so we just calculate cleaningDate)
         const cleaningDate = this.calculateCleaningDate(lendDate);
 
+        this.showLoading();
         await State.addTransaction({
             gownId: gownId,
             userId: userId,
@@ -220,6 +240,7 @@ const UI = {
             cleaningDate: cleaningDate,
             deposit: depositVal
         });
+        this.hideLoading();
 
         this.closeModal('modal-transaction');
         Calendar.render();
@@ -228,13 +249,16 @@ const UI = {
 
     async handleSettingsSubmit(e) {
         e.preventDefault();
+        if (this._debounce('saveSettings')) return;
         const newSettings = {
             password: document.getElementById('set-password').value,
             theme: document.getElementById('set-theme').value,
             accent: document.getElementById('set-accent').value,
             secondary: document.getElementById('set-secondary').value
         };
+        this.showLoading();
         await State.updateSettings(newSettings);
+        this.hideLoading();
         localStorage.setItem('gemach_auth', newSettings.password); 
         this.closeModal('modal-settings');
     },
@@ -294,27 +318,32 @@ const UI = {
         this.openModal('modal-gown-history');
     },
     
-    handleAddGownSubmit(e) {
+    async handleAddGownSubmit(e) {
         e.preventDefault();
+        if (this._debounce('addGown')) return;
+
         const id = document.getElementById('new-gown-id').value;
         const name = document.getElementById('new-gown-name').value;
         const fileInput = document.getElementById('new-gown-image-file');
 
-        const finishAdd = (base64Img) => {
-            if(!State.addGown(id, name, base64Img)) {
+        const performAdd = async (base64Img) => {
+            if (State.data.gowns.find(g => g.id === id)) {
                 alert("This Gown ID already exists!");
-            } else {
-                document.getElementById('form-add-gown').reset();
-                this.closeModal('modal-add-gown');
-                this.renderGowns(document.getElementById('search-manage-gowns').value);
-                this.populateDropdowns();
+                return;
             }
+            State.data.gowns.push({ id, name, imageUrl: base64Img || '' });
+            this.closeModal('modal-add-gown');
+            this.showLoading();
+            await State.save();
+            this.hideLoading();
+            this.renderGowns(document.getElementById('search-manage-gowns').value);
+            this.populateDropdowns();
         };
 
         if (fileInput.files && fileInput.files[0]) {
-            this.compressImage(fileInput.files[0], finishAdd);
+            this.compressImage(fileInput.files[0], (b64) => performAdd(b64));
         } else {
-            finishAdd('');
+            await performAdd('');
         }
     },
     
@@ -327,15 +356,20 @@ const UI = {
         this.openModal('modal-edit-gown');
     },
 
-    handleEditGownSubmit(e) {
+    async handleEditGownSubmit(e) {
         e.preventDefault();
+        if (this._debounce('editGown')) return;
+
         const oldId = document.getElementById('edit-gown-original-id').value;
         const newId = document.getElementById('edit-gown-id').value.trim();
         const newName = document.getElementById('edit-gown-name').value.trim();
         const fileInput = document.getElementById('edit-gown-image-file');
 
-        const finishEdit = (base64Img) => {
-            if(!State.updateGown(oldId, newId, newName, base64Img)) {
+        const performEdit = async (base64Img) => {
+            this.showLoading();
+            const result = await State.updateGown(oldId, newId, newName, base64Img);
+            this.hideLoading();
+            if (result === false) {
                 alert("Update Failed: That Barcode/ID is already in use by another gown.");
             } else {
                 this.closeModal('modal-edit-gown');
@@ -347,15 +381,18 @@ const UI = {
         };
 
         if (fileInput.files && fileInput.files[0]) {
-            this.compressImage(fileInput.files[0], finishEdit);
+            this.compressImage(fileInput.files[0], (b64) => performEdit(b64));
         } else {
-            finishEdit(undefined); 
+            await performEdit(undefined);
         }
     },
     
-    deleteGown(id) {
+    async deleteGown(id) {
+        if (this._debounce('deleteGown-' + id)) return;
         if(confirm(`Are you sure you want to delete gown ${id}?`)) {
-            State.deleteGown(id);
+            this.showLoading();
+            await State.deleteGown(id);
+            this.hideLoading();
             this.renderGowns(document.getElementById('search-manage-gowns').value);
             this.populateDropdowns();
             Calendar.render();
@@ -363,8 +400,11 @@ const UI = {
     },
 
     async deleteTransaction(id) {
+        if (this._debounce('deleteTransaction-' + id)) return;
         if(confirm("Are you sure you want to delete this event? This will remove BOTH the scheduled cleaning and lending for this transaction.")) {
+            this.showLoading();
             await State.deleteTransaction(id);
+            this.hideLoading();
             Calendar.render();
             if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr);
         }
@@ -383,7 +423,10 @@ const UI = {
             const u = State.getUser(t.userId);
             const g = State.getGown(t.gownId);
             const imgHTML = g && g.imageUrl 
-                ? `<img src="${g.imageUrl}" class="detail-card-image" alt="${g.name}">` 
+                ? `<div class="detail-card-image-wrap" onclick="UI.openImageModal('${g.imageUrl}', '${(g.name || '').replace(/'/g, "&apos;")}')">
+                       <img src="${g.imageUrl}" class="detail-card-image" alt="${g.name}">
+                       <div class="image-expand-label">Expand</div>
+                   </div>` 
                 : `<div class="detail-card-image placeholder">No Image</div>`;
 
             content.innerHTML += `
@@ -404,7 +447,10 @@ const UI = {
             const u = State.getUser(t.userId);
             const g = State.getGown(t.gownId);
             const imgHTML = g && g.imageUrl 
-                ? `<img src="${g.imageUrl}" class="detail-card-image" alt="${g.name}">` 
+                ? `<div class="detail-card-image-wrap" onclick="UI.openImageModal('${g.imageUrl}', '${(g.name || '').replace(/'/g, "&apos;")}')">
+                       <img src="${g.imageUrl}" class="detail-card-image" alt="${g.name}">
+                       <div class="image-expand-label">Expand</div>
+                   </div>` 
                 : `<div class="detail-card-image placeholder">No Image</div>`;
 
             content.innerHTML += `
@@ -432,8 +478,20 @@ const UI = {
     },
 
     promptAddMemo(dateStr) { document.getElementById('memo-date').value = dateStr; this.openModal('modal-memo'); },
-    async handleMemoSubmit(e) { e.preventDefault(); await State.addMemo({ date: document.getElementById('memo-date').value, text: document.getElementById('memo-text').value }); this.closeModal('modal-memo'); Calendar.render(); if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr); },
-    async deleteMemo(id) { if(confirm("Delete this memo?")) { await State.deleteMemo(id); Calendar.render(); if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr); } },
+
+    openImageModal(src, alt) {
+        document.getElementById('image-expand-img').src = src;
+        document.getElementById('image-expand-img').alt = alt || 'Gown';
+        this.openModal('modal-image-expand');
+    },
+    closeImageModal() {
+        const modal = document.getElementById('modal-image-expand');
+        modal.classList.remove('active');
+        setTimeout(() => { document.getElementById('image-expand-img').src = ''; }, 300);
+    },
+
+    async handleMemoSubmit(e) { e.preventDefault(); if (this._debounce('addMemo')) return; this.showLoading(); await State.addMemo({ date: document.getElementById('memo-date').value, text: document.getElementById('memo-text').value }); this.hideLoading(); this.closeModal('modal-memo'); Calendar.render(); if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr); },
+    async deleteMemo(id) { if (this._debounce('deleteMemo-' + id)) return; if(confirm("Delete this memo?")) { this.showLoading(); await State.deleteMemo(id); this.hideLoading(); Calendar.render(); if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr); } },
     
     promptReschedule(id, type, currentDate) {
         document.getElementById('reschedule-id').value = id;
@@ -446,8 +504,11 @@ const UI = {
 
     async handleRescheduleSubmit(e) {
         e.preventDefault();
-        await State.reschedule(document.getElementById('reschedule-id').value, document.getElementById('reschedule-type').value, document.getElementById('reschedule-date').value);
+        if (this._debounce('reschedule')) return;
         this.closeModal('modal-reschedule');
+        this.showLoading();
+        await State.reschedule(document.getElementById('reschedule-id').value, document.getElementById('reschedule-type').value, document.getElementById('reschedule-date').value);
+        this.hideLoading();
         Calendar.render();
         if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr);
     }
