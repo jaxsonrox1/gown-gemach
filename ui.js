@@ -382,14 +382,44 @@ const UI = {
             hasItems = true;
             const u = State.getUser(t.userId);
             const g = State.getGown(t.gownId);
-            content.innerHTML += `<div class="detail-card clean"><h4>🧹 Gown Cleaning (${g ? g.id : t.gownId})</h4><p>Reserved for: ${u ? u.name : 'Unknown'}</p><div style="display:flex; gap:5px;"><button class="btn secondary small" onclick="UI.promptReschedule('${t.id}', 'CLEAN', '${dateStr}')">Reschedule</button></div></div>`;
+            const imgHTML = g && g.imageUrl 
+                ? `<img src="${g.imageUrl}" class="detail-card-image" alt="${g.name}">` 
+                : `<div class="detail-card-image placeholder">No Image</div>`;
+
+            content.innerHTML += `
+                <div class="detail-card clean has-image">
+                    <div class="detail-card-content">
+                        <h4>🧹 Gown Cleaning (${g ? g.id : t.gownId})</h4>
+                        <p>Reserved for: ${u ? u.name : 'Unknown'}</p>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn secondary small" onclick="UI.promptReschedule('${t.id}', 'CLEAN', '${dateStr}')">Reschedule</button>
+                        </div>
+                    </div>
+                    ${imgHTML}
+                </div>`;
         });
 
         State.data.transactions.filter(t => t.lendDate === dateStr).forEach(t => {
             hasItems = true;
             const u = State.getUser(t.userId);
             const g = State.getGown(t.gownId);
-            content.innerHTML += `<div class="detail-card lend"><h4>👗 Lending Out (${g ? g.id : t.gownId})</h4><p>Customer: ${u ? u.name : 'Unknown'} (${u ? u.phone : 'No Phone'})</p><p>Deposit: $${t.deposit}</p><div style="display:flex; gap:5px;"><button class="btn secondary small" onclick="UI.promptReschedule('${t.id}', 'LEND', '${dateStr}')">Reschedule</button><button class="btn danger small" onclick="UI.deleteTransaction('${t.id}')">Delete</button></div></div>`;
+            const imgHTML = g && g.imageUrl 
+                ? `<img src="${g.imageUrl}" class="detail-card-image" alt="${g.name}">` 
+                : `<div class="detail-card-image placeholder">No Image</div>`;
+
+            content.innerHTML += `
+                <div class="detail-card lend has-image">
+                    <div class="detail-card-content">
+                        <h4>👗 Lending Out (${g ? g.id : t.gownId})</h4>
+                        <p>Customer: ${u ? u.name : 'Unknown'} (${u ? u.phone : 'No Phone'})</p>
+                        <p>Deposit: $${t.deposit}</p>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn secondary small" onclick="UI.promptReschedule('${t.id}', 'LEND', '${dateStr}')">Reschedule</button>
+                            <button class="btn danger small" onclick="UI.deleteTransaction('${t.id}')">Delete</button>
+                        </div>
+                    </div>
+                    ${imgHTML}
+                </div>`;
         });
 
         State.data.events.filter(e => e.date === dateStr).forEach(e => {
