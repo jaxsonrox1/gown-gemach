@@ -176,6 +176,26 @@ const UI = {
         const gownId = document.getElementById('trans-gown').value;
         if (!gownId) { alert("Please select a gown."); return; }
 
+        // --- NEW: Grab date early & check for 3-day conflict ---
+        const lendDate = document.getElementById('trans-date').value;
+        const newLendDate = new Date(lendDate + 'T00:00:00');
+        
+        const conflict = State.data.transactions.find(t => {
+            if (t.gownId === gownId && t.lendDate) {
+                const existingDate = new Date(t.lendDate + 'T00:00:00');
+                const diffTime = Math.abs(newLendDate - existingDate);
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                return diffDays <= 3; // Within 3 days before OR after
+            }
+            return false;
+        });
+
+        if (conflict) {
+            alert(`Cannot complete: This gown is already scheduled to be lent out on ${conflict.lendDate}, which is within 3 days of your selected date.`);
+            return; // Stop form submission
+        }
+        // --- END CONFLICT CHECK ---
+
         let userId = document.getElementById('trans-user').value;
         if (userId === 'NEW') {
             const newUser = {
@@ -190,7 +210,7 @@ const UI = {
         let depositVal = document.getElementById('trans-deposit').value;
         if(depositVal === 'CUSTOM') depositVal = document.getElementById('trans-custom-deposit').value;
 
-        const lendDate = document.getElementById('trans-date').value;
+        // (lendDate was already defined at the top, so we just calculate cleaningDate)
         const cleaningDate = this.calculateCleaningDate(lendDate);
 
         await State.addTransaction({
@@ -205,7 +225,7 @@ const UI = {
         Calendar.render();
         if(Calendar.selectedDateStr) this.renderSidebar(Calendar.selectedDateStr);
     },
-    
+
     async handleSettingsSubmit(e) {
         e.preventDefault();
         const newSettings = {
