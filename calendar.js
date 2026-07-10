@@ -37,6 +37,18 @@ const Calendar = {
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         document.getElementById('calendar-month-year').textContent = `${monthNames[month]} ${year}`;
 
+        let monthlyCount = 0;
+        State.data.transactions.forEach(t => {
+            if (t.lendDate) {
+                const d = new Date(t.lendDate + 'T00:00:00');
+                if (d.getFullYear() === year && d.getMonth() === month) monthlyCount++;
+            }
+        });
+        const statsEl = document.getElementById('monthly-stats');
+        if (statsEl) {
+            statsEl.textContent = `${monthlyCount} Gown${monthlyCount !== 1 ? 's' : ''} Lent This Month`;
+        }
+
         const grid = document.getElementById('calendar-grid');
         grid.innerHTML = '';
 
